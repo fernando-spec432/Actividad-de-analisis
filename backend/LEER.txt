@@ -1,0 +1,32 @@
+🚀 Documentación de la API (Backend) para Frontend
+El backend ya está configurado y exponiendo los datos de la base de datos PostgreSQL. Se ha habilitado CORS para permitir peticiones desde http://localhost:5173 (puerto por defecto de Vite/React).
+
+🌐 URL Base
+Todas las peticiones deben dirigirse a: http://localhost:8000
+
+📖 Interfaz de Pruebas (Swagger)
+Para explorar y probar los endpoints visualmente antes de programar las peticiones en React, pueden visitar: 👉 http://localhost:8000/docs
+
+🔌 Endpoints Principales Disponibles
+1. Autenticación (Login)
+Método: POST
+Ruta: /login
+Cuerpo de la Petición (JSON esperado):
+json
+{
+  "username": "admin",
+  "password": "admin123"
+}
+Respuestas esperadas:
+200 OK: Devuelve los datos del usuario logueado.
+401 Unauthorized: Credenciales incorrectas.
+403 Forbidden: El usuario está inactivo.
+2. Gestión de Usuarios y Roles
+GET /usuarios: Devuelve la lista de usuarios con sus roles asociados.
+GET /roles: Devuelve los roles disponibles en el sistema.
+3. Inventario
+GET /productos: Obtiene el catálogo completo de productos con su stock actual.
+GET /alertas-stock: Devuelve únicamente los productos cuyo stock_actual está por debajo del stock_minimo_alerta (útil para la pantalla de notificaciones o dashboard).
+🛠️ Notas Adicionales
+Credenciales de prueba: Pueden usar el usuario admin (pass: admin123) o bodega (pass: bodega123).
+Por el momento, la contraseña viaja en texto plano y no se utilizan tokens JWT (JSON Web Tokens). Una vez validemos el flujo básico en este Sprint, se implementará la seguridad avanzada.

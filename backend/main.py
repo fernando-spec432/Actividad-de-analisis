@@ -1,8 +1,13 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from database import get_db
+from pydantic import BaseModel
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
 
 app = FastAPI(
     title="API Control de Inventario",
@@ -29,6 +34,32 @@ def inicio():
         "mensaje": "API funcionando correctamente"
     }
 
+
+@app.post("/login")
+def login(credenciales: LoginRequest, db: Session = Depends(get_db)):
+    # Consulta para buscar al usuario por username y contraseña
+    query = text("""
+        SELECT id_usuario, username, id_rol, activo 
+        FROM usuarios 
+        WHERE username = :username AND password_hash = :password
+    """)
+    
+    resultado = db.execute(query, {"username": credenciales.username, "password": credenciales.password}).fetchone()
+
+    if not resultado:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario o contraseña incorrectos")
+    
+    if not getattr(resultado, "activo", True):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="El usuario está inactivo")
+
+    return {
+        "mensaje": "Autenticación exitosa",
+        "usuario": {
+            "id_usuario": resultado.id_usuario,
+            "username": resultado.username,
+            "id_rol": resultado.id_rol
+        }
+    }
 
 @app.get("/roles")
 def obtener_roles(db: Session = Depends(get_db)):
