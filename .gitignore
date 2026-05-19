@@ -1,18 +1,15 @@
-# Entorno virtual Python
-.venv/
-venv/
+# Variables de entorno (Credenciales y configuraciones sensibles)
+.env
+backend/.env
+*.env
 
-# Caché de Python
+# Python / FastAPI (Backend)
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+venv/
+env/
 
-# React / Node
+# Node.js / React (Frontend)
 node_modules/
 dist/
-
-# VS Code opcional
-.vscode/
-
-# Archivos del sistema
-.DS_Store
-Thumbs.db
