@@ -11,7 +11,7 @@ py -m venv .venv
 
 #Ingresaan estos comando para instalar dependencias
 python -m pip install --upgrade pip
-python -m pip install fastapi uvicorn sqlalchemy psycopg2-binary python-dotenv
+python -m pip install fastapi uvicorn sqlalchemy psycopg2-binary python-dotenv bcrypt python-jose
 
 #Para levantar el proyecto deben de estar dentro de backend y ejecutar el siguiente comando
 uvicorn main:app --reload
