@@ -120,6 +120,6 @@ SELECT setval(pg_get_serial_sequence('roles', 'id_col'), COALESCE(MAX(id_col), 1
 
 -- Insertar usuarios (si el username ya existe, no hace nada)
 INSERT INTO usuarios (username, password_hash, id_rol) VALUES 
-('admin', 'admin123', 1), 
-('bodega', 'bodega123', 2)
+('admin', '$2b$12$ey.ZIfW5UJrimRhWndtSbedLgmducm9R0wx2dOwSE83hHXVD9Nmcm', 1), 
+('bodega', '$2b$12$SIkA8ZVcVr1Td5EmOAUmf.IUR1yGAmCjlEkjw8Zuv0GIT3jF9b39y', 2)
 ON CONFLICT (username) DO NOTHING;
