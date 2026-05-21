@@ -1,0 +1,35 @@
+﻿#Siempre Creen su propio entorno virtual, el que esta en el proyecto esta corrupto
+#Para ello ingresen lo siguiente
+
+Remove-Item -Recurse -Force .venv
+
+#Luego creen el entorno virtual con este comando
+py -m venv .venv
+
+#Lo activan con este comando
+.\.venv\Scripts\activate
+
+#Ingresaan estos comando para instalar dependencias
+python -m pip install --upgrade pip
+python -m pip install fastapi uvicorn sqlalchemy psycopg2-binary python-dotenv bcrypt python-jose
+
+#Para levantar el proyecto deben de estar dentro de backend y ejecutar el siguiente comando
+uvicorn main:app --reload
+Esto tendra que levanta lo siguiente
+http://127.0.0.1:8000/
+
+#Vean el archivo .env 
+#Aqui estan los datos de la conexion de la base de datos que deben de modificar segun como instalaron postgrest y creada la base, tablas y registros
+
+#Deben de tener instalado Node.js de lo contrario no funcionara los comandos
+#Deben de estar en la carpeta ruta de Frontend e ingresar los siguientes comandos
+npm install
+npm run dev
+
+#Si todo esta bien les tirara la siguiente direccion
+http://localhost:5173/
+# Y si les debe de dar la consulta de roles
+
+Las contraseñas de logeo son:
+{"username": "admin",  "password": "admin123"},
+    {"username": "bodega", "password": "bodega123"},
