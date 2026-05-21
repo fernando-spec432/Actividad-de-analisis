@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 
 const API_URL = "http://127.0.0.1:8000";
 
-function Productos() {
-  const [token, setToken] = useState(localStorage.getItem("token") || "");
+function Productos({ onVolverMenu, onCerrarSesion }) {
   const [productos, setProductos] = useState([]);
   const [mensaje, setMensaje] = useState("");
   const [editandoId, setEditandoId] = useState(null);
@@ -15,35 +14,25 @@ function Productos() {
     stock_minimo_alerta: 5,
   });
 
-  const guardarToken = () => {
-    if (!token.trim()) {
-      setMensaje("Debes pegar un token válido.");
-      return;
-    }
-
-    localStorage.setItem("token", token);
-    setMensaje("Token guardado correctamente.");
-    cargarProductos();
-  };
+  const obtenerToken = () => localStorage.getItem("token");
 
   const cargarProductos = async () => {
-    const tokenGuardado = localStorage.getItem("token");
+    const token = obtenerToken();
 
-    if (!tokenGuardado) {
-      setMensaje("No hay token guardado. Pega el token generado desde Swagger.");
+    if (!token) {
+      setMensaje("No hay sesión activa.");
       return;
     }
 
     try {
       const respuesta = await fetch(`${API_URL}/productos/`, {
-        method: "GET",
         headers: {
-          Authorization: `Bearer ${tokenGuardado}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (!respuesta.ok) {
-        setMensaje("No se pudieron cargar los productos. Revisa si el token venció.");
+        setMensaje("No se pudieron cargar los productos.");
         return;
       }
 
@@ -72,19 +61,13 @@ function Productos() {
       descripcion: "",
       stock_minimo_alerta: 5,
     });
-
     setEditandoId(null);
   };
 
   const guardarProducto = async (e) => {
     e.preventDefault();
 
-    const tokenGuardado = localStorage.getItem("token");
-
-    if (!tokenGuardado) {
-      setMensaje("No hay token guardado. Primero pega el token.");
-      return;
-    }
+    const token = obtenerToken();
 
     const url = editandoId
       ? `${API_URL}/productos/${editandoId}`
@@ -98,19 +81,14 @@ function Productos() {
           descripcion: formulario.descripcion,
           stock_minimo_alerta: formulario.stock_minimo_alerta,
         }
-      : {
-          codigo_unico: formulario.codigo_unico,
-          nombre: formulario.nombre,
-          descripcion: formulario.descripcion,
-          stock_minimo_alerta: formulario.stock_minimo_alerta,
-        };
+      : formulario;
 
     try {
       const respuesta = await fetch(url, {
         method: metodo,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${tokenGuardado}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(datosEnviar),
       });
@@ -121,12 +99,7 @@ function Productos() {
         return;
       }
 
-      setMensaje(
-        editandoId
-          ? "Producto actualizado correctamente."
-          : "Producto creado correctamente."
-      );
-
+      setMensaje(editandoId ? "Producto actualizado correctamente." : "Producto creado correctamente.");
       limpiarFormulario();
       cargarProductos();
     } catch (error) {
@@ -150,27 +123,20 @@ function Productos() {
 
   const eliminarProducto = async (idProducto) => {
     const confirmar = window.confirm("¿Seguro que deseas eliminar este producto?");
-
     if (!confirmar) return;
 
-    const tokenGuardado = localStorage.getItem("token");
-
-    if (!tokenGuardado) {
-      setMensaje("No hay token guardado.");
-      return;
-    }
+    const token = obtenerToken();
 
     try {
       const respuesta = await fetch(`${API_URL}/productos/${idProducto}`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${tokenGuardado}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (!respuesta.ok) {
-        const error = await respuesta.json();
-        setMensaje(error.detail || "No se pudo eliminar el producto.");
+        setMensaje("No se pudo eliminar el producto.");
         return;
       }
 
@@ -183,38 +149,24 @@ function Productos() {
   };
 
   useEffect(() => {
-    if (localStorage.getItem("token")) {
-      cargarProductos();
-    }
+    cargarProductos();
   }, []);
 
   return (
     <div style={styles.contenedor}>
-      <h1 style={styles.titulo}>Sistema de Control de Inventario</h1>
-      <h2 style={styles.subtitulo}>CRUD de Productos</h2>
+      <header style={styles.header}>
+        <h1>Productos</h1>
 
-      <section style={styles.tarjeta}>
-        <h3>Token de prueba</h3>
-        <p>
-          Login pendiente de creacion, aquí se usa el token
-          generado desde Swagger para probar el CRUD de productos.
-        </p>
+        <div>
+          <button onClick={onVolverMenu} style={styles.botonSecundario}>
+            Volver al menú
+          </button>
 
-        <textarea
-          value={token}
-          onChange={(e) => setToken(e.target.value)}
-          placeholder="Pega aquí el access_token"
-          style={styles.textarea}
-        />
-
-        <button onClick={guardarToken} style={styles.botonPrincipal}>
-          Guardar token
-        </button>
-
-        <button onClick={cargarProductos} style={styles.botonSecundario}>
-          Cargar productos
-        </button>
-      </section>
+          <button onClick={onCerrarSesion} style={styles.botonSalir}>
+            Cerrar sesión
+          </button>
+        </div>
+      </header>
 
       {mensaje && <p style={styles.mensaje}>{mensaje}</p>}
 
@@ -222,52 +174,44 @@ function Productos() {
         <h3>{editandoId ? "Editar producto" : "Crear producto"}</h3>
 
         <form onSubmit={guardarProducto} style={styles.formulario}>
-          <div>
-            <label>Código único</label>
-            <input
-              type="text"
-              name="codigo_unico"
-              value={formulario.codigo_unico}
-              onChange={manejarCambio}
-              disabled={editandoId !== null}
-              required={!editandoId}
-              style={styles.input}
-            />
-          </div>
+          <label>Código único</label>
+          <input
+            type="text"
+            name="codigo_unico"
+            value={formulario.codigo_unico}
+            onChange={manejarCambio}
+            disabled={editandoId !== null}
+            required={!editandoId}
+            style={styles.input}
+          />
 
-          <div>
-            <label>Nombre</label>
-            <input
-              type="text"
-              name="nombre"
-              value={formulario.nombre}
-              onChange={manejarCambio}
-              required
-              style={styles.input}
-            />
-          </div>
+          <label>Nombre</label>
+          <input
+            type="text"
+            name="nombre"
+            value={formulario.nombre}
+            onChange={manejarCambio}
+            required
+            style={styles.input}
+          />
 
-          <div>
-            <label>Descripción</label>
-            <textarea
-              name="descripcion"
-              value={formulario.descripcion}
-              onChange={manejarCambio}
-              style={styles.textareaPequena}
-            />
-          </div>
+          <label>Descripción</label>
+          <textarea
+            name="descripcion"
+            value={formulario.descripcion}
+            onChange={manejarCambio}
+            style={styles.textarea}
+          />
 
-          <div>
-            <label>Stock mínimo de alerta</label>
-            <input
-              type="number"
-              name="stock_minimo_alerta"
-              value={formulario.stock_minimo_alerta}
-              onChange={manejarCambio}
-              min="0"
-              style={styles.input}
-            />
-          </div>
+          <label>Stock mínimo de alerta</label>
+          <input
+            type="number"
+            name="stock_minimo_alerta"
+            value={formulario.stock_minimo_alerta}
+            onChange={manejarCambio}
+            min="0"
+            style={styles.input}
+          />
 
           <div>
             <button type="submit" style={styles.botonPrincipal}>
@@ -275,11 +219,7 @@ function Productos() {
             </button>
 
             {editandoId && (
-              <button
-                type="button"
-                onClick={limpiarFormulario}
-                style={styles.botonSecundario}
-              >
+              <button type="button" onClick={limpiarFormulario} style={styles.botonSecundario}>
                 Cancelar edición
               </button>
             )}
@@ -313,24 +253,16 @@ function Productos() {
                   <td style={styles.td}>{producto.id_producto}</td>
                   <td style={styles.td}>{producto.codigo_unico}</td>
                   <td style={styles.td}>{producto.nombre}</td>
-                  <td style={styles.td}>
-                    {producto.descripcion || "Sin descripción"}
-                  </td>
+                  <td style={styles.td}>{producto.descripcion || "Sin descripción"}</td>
                   <td style={styles.td}>{producto.stock_actual}</td>
                   <td style={styles.td}>{producto.stock_minimo_alerta}</td>
                   <td style={styles.td}>{producto.fecha_creacion}</td>
                   <td style={styles.td}>
-                    <button
-                      onClick={() => prepararEdicion(producto)}
-                      style={styles.botonEditar}
-                    >
+                    <button onClick={() => prepararEdicion(producto)} style={styles.botonEditar}>
                       Editar
                     </button>
 
-                    <button
-                      onClick={() => eliminarProducto(producto.id_producto)}
-                      style={styles.botonEliminar}
-                    >
+                    <button onClick={() => eliminarProducto(producto.id_producto)} style={styles.botonEliminar}>
                       Eliminar
                     </button>
                   </td>
@@ -351,13 +283,15 @@ const styles = {
     backgroundColor: "#f4f6f8",
     minHeight: "100vh",
   },
-  titulo: {
-    textAlign: "center",
-    marginBottom: "5px",
-  },
-  subtitulo: {
-    textAlign: "center",
-    marginBottom: "25px",
+  header: {
+    backgroundColor: "#749acf",
+    color: "white",
+    padding: "20px",
+    borderRadius: "10px",
+    marginBottom: "20px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   tarjeta: {
     backgroundColor: "white",
@@ -368,30 +302,19 @@ const styles = {
   },
   formulario: {
     display: "grid",
-    gap: "15px",
+    gap: "10px",
   },
   input: {
     width: "100%",
     padding: "10px",
-    marginTop: "5px",
     borderRadius: "5px",
     border: "1px solid #ccc",
     boxSizing: "border-box",
   },
   textarea: {
     width: "100%",
-    height: "80px",
-    padding: "10px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
-    marginBottom: "10px",
-    boxSizing: "border-box",
-  },
-  textareaPequena: {
-    width: "100%",
     height: "60px",
     padding: "10px",
-    marginTop: "5px",
     borderRadius: "5px",
     border: "1px solid #ccc",
     boxSizing: "border-box",
@@ -413,6 +336,14 @@ const styles = {
     color: "white",
     cursor: "pointer",
     marginRight: "10px",
+  },
+  botonSalir: {
+    padding: "10px 15px",
+    border: "none",
+    borderRadius: "5px",
+    backgroundColor: "#dc2626",
+    color: "white",
+    cursor: "pointer",
   },
   botonEditar: {
     padding: "7px 10px",
