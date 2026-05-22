@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 
@@ -29,3 +29,28 @@ class ProductoEditar(BaseModel):
     nombre: Optional[str] = None
     descripcion: Optional[str] = None
     stock_minimo_alerta: Optional[int] = None
+
+
+class RegistroEntrada(BaseModel):
+    id_producto: int
+    cantidad: int
+    id_usuario: int
+
+
+class RegistroSalida(BaseModel):
+    id_producto: int
+    cantidad: int = Field(..., gt=0, description="La cantidad debe ser mayor a 0")
+    id_usuario: int
+
+
+class UsuarioCrear(BaseModel):
+    username: str = Field(..., description="Nombre de usuario único", min_length=3, max_length=50)
+    password: str = Field(..., description="Contraseña del usuario", min_length=6)
+    id_rol: int = Field(..., description="ID del rol asignado al usuario", gt=0)
+
+
+class UsuarioEditar(BaseModel):
+    username: Optional[str] = Field(None, description="Nombre de usuario único", min_length=3, max_length=50)
+    password: Optional[str] = Field(None, description="Contraseña del usuario", min_length=6)
+    id_rol: Optional[int] = Field(None, description="ID del rol asignado al usuario", gt=0)
+    activo: Optional[bool] = Field(None, description="Estado del usuario (activo/inactivo)")

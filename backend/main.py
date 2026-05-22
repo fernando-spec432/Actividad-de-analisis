@@ -1,12 +1,11 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from pydantic import BaseModel, Field
-from fastapi import FastAPI, Depends, HTTPException
 
 from database import get_db
-from routers import auth, productos
+from routers import auth, productos, entradas, salidas
 
 
 app = FastAPI(
@@ -28,6 +27,8 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(productos.router)
+app.include_router(entradas.router)
+app.include_router(salidas.router)
 
 
 @app.get("/")
@@ -78,6 +79,7 @@ def obtener_alertas_stock(db: Session = Depends(get_db)):
         }
         for fila in resultado
     ]
+
 
 #==============================================================================
 # Endpoint para registrar entradas
