@@ -5,7 +5,7 @@ from sqlalchemy import text
 from pydantic import BaseModel, Field
 
 from database import get_db
-from routers import auth, productos, entradas, salidas
+from routers import auth, productos, entradas, salidas, alertas
 
 
 app = FastAPI(
@@ -29,7 +29,7 @@ app.include_router(auth.router)
 app.include_router(productos.router)
 app.include_router(entradas.router)
 app.include_router(salidas.router)
-
+app.include_router(alertas.router)
 
 @app.get("/")
 def inicio():
