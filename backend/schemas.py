@@ -37,6 +37,12 @@ class RegistroEntrada(BaseModel):
     id_usuario: int
 
 
+class RegistroSalida(BaseModel):
+    id_producto: int
+    cantidad: int = Field(..., gt=0, description="La cantidad debe ser mayor a 0")
+    id_usuario: int
+
+
 class UsuarioCrear(BaseModel):
     username: str = Field(..., description="Nombre de usuario único", min_length=3, max_length=50)
     password: str = Field(..., description="Contraseña del usuario", min_length=6)
