@@ -1,32 +1,42 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import Login from "./Login";
+import MenuPrincipal from "./MenuPrincipal";
+import Productos from "./Productos";
 
 function App() {
-  const [roles, setRoles] = useState([]);
+  const [token, setToken] = useState(localStorage.getItem("token") || "");
+  const [vista, setVista] = useState("menu");
 
-  useEffect(() => {
-    fetch("http://127.0.0.1:8000/roles")
-      .then((response) => response.json())
-      .then((data) => setRoles(data))
-      .catch((error) => console.error("Error al conectar con la API:", error));
-  }, []);
+  const manejarLogin = (nuevoToken) => {
+    localStorage.setItem("token", nuevoToken);
+    setToken(nuevoToken);
+    setVista("menu");
+  };
+
+  const cerrarSesion = () => {
+    localStorage.removeItem("token");
+    setToken("");
+    setVista("menu");
+  };
+
+  if (!token) {
+    return <Login onLogin={manejarLogin} />;
+  }
+
+  if (vista === "productos") {
+    return (
+      <Productos
+        onVolverMenu={() => setVista("menu")}
+        onCerrarSesion={cerrarSesion}
+      />
+    );
+  }
 
   return (
-    <div style={{ padding: "30px", fontFamily: "Arial" }}>
-      <h1>Sistema de Control de Inventario</h1>
-      <h2>Roles desde PostgreSQL</h2>
-
-      {roles.length === 0 ? (
-        <p>No hay roles cargados o no se pudo conectar con la API.</p>
-      ) : (
-        <ul>
-          {roles.map((rol) => (
-            <li key={rol.id_col}>
-              {rol.id_col} - {rol.nombre_rol}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <MenuPrincipal
+      onIrProductos={() => setVista("productos")}
+      onCerrarSesion={cerrarSesion}
+    />
   );
 }
 
