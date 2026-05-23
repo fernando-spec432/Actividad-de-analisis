@@ -63,19 +63,20 @@ def login(datos: LoginRequest, db: Session = Depends(get_db)):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Usuario inactivo",
         )
+    print(f"FRONTEND MANDA -> Usuario: {datos.username}, Clave: {datos.password}")
+    print(f"BASE DATOS TIENE -> Usuario: {fila.username}, Clave: {fila.password_hash}")
+    # 1. Validación de contraseña en texto plano
+    if datos.password != fila.password_hash:
+        raise HTTPException(status_code=400, detail="Credenciales inválidas")
 
-    if not bcrypt.checkpw(datos.password.encode(), fila.password_hash.encode()):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Credenciales inválidas",
-        )
-
+    # 2. Creación del token con los nombres exactos de tu tabla (id_usuario, username, id_rol)
     token = _crear_token({
         "sub": str(fila.id_usuario),
         "username": fila.username,
-        "id_rol": fila.id_rol,
+        "id_rol": fila.id_rol
     })
 
+    # 3. Retorno del token al frontend
     return {"access_token": token, "token_type": "bearer"}
 
 
